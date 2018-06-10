@@ -21,7 +21,7 @@ router.post('/2text', function (req, res, next) {
       console.log("Error:", reason);
       res.redirect('/');
     }).then(captions => {
-      console.log(captions);
+      console.log("Found " + captions.length + " lines.");
       captions.forEach(c => {
         req.session.text += (useTime ? c.start + ' + ' + c.dur + ': ' : '') + c.text + '\r\n';
       });
