@@ -6,6 +6,19 @@
   </head>
   <body>
     <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <form method="post" action="2text">
+      <div>
+        <label>Video ID:
+          <input type="text" name="vidid" value="<%= vidid %>">
+        </label>
+      </div>
+      <div>
+        <label>Include Time:
+          <input type="checkbox" name="time" <%= time ? 'checked' : '' %>>
+        </label>
+      </div>
+      <input type="submit" value="Submit">
+    </form>
+    <textarea cols="100" rows="40" readonly><%= text %></textarea>
   </body>
 </html>
