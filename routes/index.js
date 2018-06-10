@@ -9,7 +9,7 @@ router.get('/', function (req, res, next) {
 
 router.post('/2text', function (req, res, next) {
   console.log(req.body);
-  if (req.body.vidid) {
+  if (req.body.vidid && /^[A-Za-z0-9_-]{11}$/.test(req.body.vidid)) {
     let useTime = !!req.body.time;
     req.session.vidid = req.body.vidid;
     req.session.time = useTime;
