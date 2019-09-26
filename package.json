@@ -7,16 +7,16 @@
     "watch": "nodemon --watch routes --watch views --watch public -e js,ejs,css ./bin/www"
   },
   "dependencies": {
-    "cookie-parser": "~1.4.3",
+    "cookie-parser": "^1.4.4",
     "debug": "~2.6.9",
     "ejs": "~2.5.7",
-    "express": "~4.16.0",
-    "express-session": "^1.15.6",
+    "express": "^4.16.4",
+    "express-session": "^1.16.2",
     "http-errors": "~1.6.2",
-    "morgan": "~1.9.0",
-    "youtube-captions-scraper": "^1.0.2"
+    "morgan": "^1.9.1",
+    "youtube-captions-scraper": "^1.0.3"
   },
   "devDependencies": {
-    "nodemon": "^1.17.5"
+    "nodemon": "^1.19.2"
   }
 }
