@@ -1,35 +1,73 @@
 const express = require('express');
 const router = express.Router();
+const url = require('url');
 const getSubtitles = require('youtube-captions-scraper').getSubtitles;
+
+const addQuery = (req, res, next) => {
+  req.query.url = req.body.vidurl;
+  next();
+};
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-  res.render('index', { title: 'YT to Text', text: req.session.text, vidid: req.session.vidid, time: req.session.time });
+  if(req.query.url && req.query.url !== req.session.vidurl) {
+    req.session.text = "";
+  }
+  res.render('index', {
+    title: 'YT to Text',
+    text: req.session.text,
+    vidurl: req.query.url || req.session.vidurl,
+    time: req.session.time,
+    join: req.session.join
+  });
 });
+
+
 
 router.post('/2text', function (req, res, next) {
   console.log(req.body);
-  if (req.body.vidid && /^[A-Za-z0-9_-]{11}$/.test(req.body.vidid)) {
+  req.session.vidurl = req.body.vidurl;
+  const urlParts = url.parse(req.body.vidurl, true);
+  if (urlParts.query && urlParts.query.v && /^[A-Za-z0-9_-]{11,}$/.test(urlParts.query.v)) {
     let useTime = !!req.body.time;
-    req.session.vidid = req.body.vidid;
+    let joinLines = !!req.body.join;
     req.session.time = useTime;
+    req.session.join = joinLines;
     req.session.text = "";
     getSubtitles({
-      videoID: req.session.vidid, // youtube video id
+      videoID: urlParts.query.v, // youtube video id
       lang: 'en' // default: `en`
     }).catch((reason) => {
       console.log("Error:", reason);
       res.redirect('/');
     }).then(captions => {
       console.log("Found " + captions.length + " lines.");
-      captions.forEach(c => {
-        req.session.text += (useTime ? c.start + ' + ' + c.dur + ': ' : '') + c.text + '\r\n';
-      });
-      res.redirect('/');
+      if(joinLines) {
+        req.session.text = captions.map(c => c.text).join(" ");
+      } else {
+        captions.forEach(c => {
+          req.session.text += (useTime ? toHHMMSSsss(c.start) + ' -- ' + toHHMMSSsss(c.start*1 + c.dur*1) + ': ' : '') + c.text + '\r\n';
+        });
+      }
+
+      res.redirect('/?url=' + encodeURIComponent(req.session.vidurl));
     });
   } else {
     res.redirect('/');
   }
 });
+
+function toHHMMSSsss(val) {
+  const sec_num = val*1; // don't forget the second param
+  let hours   = Math.floor(sec_num / 3600);
+  let minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+  let seconds = (sec_num - (hours * 3600) - (minutes * 60)).toFixed(0);
+  let micros = (sec_num % 1).toFixed(3).substring(2).padStart(3, '0');
+
+  if (hours   < 10) {hours   = "0"+hours;}
+  if (minutes < 10) {minutes = "0"+minutes;}
+  if (seconds < 10) {seconds = "0"+seconds;}
+  return (hours !== "00" ? hours+':' : '')+(minutes !== "00" ? minutes+':' : '')+seconds+'.'+micros;
+}
 
 module.exports = router;

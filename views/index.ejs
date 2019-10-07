@@ -2,23 +2,43 @@
 <html>
   <head>
     <title><%= title %></title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
     <link rel='stylesheet' href='/stylesheets/style.css' />
+
   </head>
   <body>
-    <h1><%= title %></h1>
-    <form method="post" action="2text">
+    <h1 class="ui header"><%= title %></h1>
+    <form class="ui form" method="post" action="2text">
       <div>
-        <label>Video ID:
-          <input type="text" name="vidid" value="<%= vidid %>">
-        </label>
+      <div class="ui labeled input">
+          <div class="ui label">Video URL</div>
+          <input type="text" name="vidurl" placeholder="Video URL" value="<%= vidurl %>" onfocus="this.select();" onmouseup="return false;" id="url">
+        </div>
       </div>
-      <div>
-        <label>Include Time:
-          <input type="checkbox" name="time" <%= time ? 'checked' : '' %>>
-        </label>
+      <div class="time ui checkbox">
+          <input type="checkbox" name="time" id="time" <%= time ? 'checked' : '' %>>
+          <label for="time">Include time</label>
       </div>
-      <input type="submit" value="Submit">
+      <br />
+      <div class="join ui checkbox">
+          <input type="checkbox" name="join" id="join" <%= join ? 'checked' : '' %>>
+          <label for="join">Join lines</label>
+      </div>
+      <br />
+      <input type="submit" value="Submit" class="ui button">
     </form>
-    <textarea cols="100" rows="40" readonly><%= text %></textarea>
+    
+    <br />
+
+    <textarea cols="100" rows="40" readonly id="text"><%= text %></textarea>
+    <button id="copy" onclick="copy()" class="ui button">Copy</button>
+
+
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+      integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8="
+      crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+    <script src="/javascripts/index.js"></script>
   </body>
 </html>

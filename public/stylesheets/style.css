@@ -6,3 +6,19 @@ body {
 a {
   color: #00B7FF;
 }
+
+#url {
+  width: 500px;
+}
+
+#copy {
+  vertical-align: top;
+}
+
+.ui.checkbox {
+  margin: 10px 0;
+}
+
+.ui.checkbox label {
+  cursor: pointer;
+}

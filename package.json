@@ -18,5 +18,8 @@
   },
   "devDependencies": {
     "nodemon": "^1.19.2"
+  },
+  "resolutions": {
+    "axios": "^0.18.1"
   }
 }
