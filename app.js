@@ -4,11 +4,18 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require('express-session')
+const basicAuth = require('express-basic-auth')
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 
 const app = express();
+
+app.use(basicAuth({
+  users: {'yt': 'gimmethetext'},
+  challenge: true,
+  realm: '1mp0ss1b13',
+}));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
