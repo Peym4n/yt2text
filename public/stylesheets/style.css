@@ -15,6 +15,10 @@ a {
   vertical-align: top;
 }
 
+#paste {
+  margin-left: 5px;
+}
+
 .ui.checkbox {
   margin: 10px 0;
 }

@@ -38,9 +38,13 @@ router.post('/2text', function (req, res, next) {
       videoID: urlParts.query.v, // youtube video id
       lang: 'en' // default: `en`
     }).catch((reason) => {
-      console.log("Error:", reason);
-      res.redirect('/');
+      console.error(reason);
+      req.session.text = reason + "";
+      res.redirect('/?url=' + encodeURIComponent(req.session.vidurl));
     }).then(captions => {
+      if(!captions) {
+        return;
+      }
       console.log("Found " + captions.length + " lines.");
       if(joinLines) {
         req.session.text = captions.map(c => c.text).join(" ");
@@ -51,7 +55,7 @@ router.post('/2text', function (req, res, next) {
       }
 
       res.redirect('/?url=' + encodeURIComponent(req.session.vidurl));
-    });
+    }).catch(reason => console.error(reason));
   } else {
     res.redirect('/');
   }

@@ -13,6 +13,7 @@
       <div class="ui labeled input">
           <div class="ui label">Video URL</div>
           <input type="text" name="vidurl" placeholder="Video URL" value="<%= vidurl %>" onfocus="this.select();" onmouseup="return false;" id="url">
+          <button id="paste" type="button" onclick="pasteText()" class="ui button">Paste</button>
         </div>
       </div>
       <div class="time ui checkbox">
@@ -31,7 +32,7 @@
     <br />
 
     <textarea cols="100" rows="40" readonly id="text"><%= text %></textarea>
-    <button id="copy" onclick="copy()" class="ui button">Copy</button>
+    <button id="copy" type="button" onclick="copy()" class="ui button">Copy</button>
 
 
     <script
