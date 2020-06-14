@@ -30,7 +30,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(join(__dirname, '../public')));
+app.use(express.static(join(__dirname, './public')));
 app.use(session({
   secret: 'cute cat video!',
   resave: false,

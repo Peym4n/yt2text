@@ -8,7 +8,7 @@ a {
 }
 
 #url {
-  width: 500px;
+  width: calc(100vw - 280px);
 }
 
 #copy {
@@ -25,4 +25,9 @@ a {
 
 .ui.checkbox label {
   cursor: pointer;
+}
+
+#text {
+  width: 100%;
+  height: calc(100% - 240px);
 }
