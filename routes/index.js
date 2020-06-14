@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const url = require('url');
-const getSubtitles = require('youtube-captions-scraper').getSubtitles;
+import url from 'url';
+import * as ycs from "youtube-captions-scraper";
+const getSubtitles = ycs.getSubtitles;
 
 const addQuery = (req, res, next) => {
   req.query.url = req.body.vidurl;
@@ -74,4 +75,4 @@ function toHHMMSSsss(val) {
   return (hours !== "00" ? hours+':' : '')+(minutes !== "00" ? minutes+':' : '')+seconds+'.'+micros;
 }
 
-module.exports = router;
+export default router;

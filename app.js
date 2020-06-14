@@ -1,13 +1,18 @@
 import createError from 'http-errors';
-import express, { json, urlencoded, static } from 'express';
+import express from 'express';
 import { join } from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import session from 'express-session';
 import basicAuth from 'express-basic-auth';
 
-import indexRouter from './routes/index';
-import usersRouter from './routes/users';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+import indexRouter from './routes/index.js';
+import usersRouter from './routes/users.js';
 
 const app = express();
 
@@ -22,10 +27,10 @@ app.set('views', join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
-app.use(json());
-app.use(urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(static(join(__dirname, 'public')));
+app.use(express.static(join(__dirname, '../public')));
 app.use(session({
   secret: 'cute cat video!',
   resave: false,
