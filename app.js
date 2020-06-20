@@ -15,12 +15,13 @@ import indexRouter from './routes/index.js';
 import usersRouter from './routes/users.js';
 
 const app = express();
-
+/*
 app.use(basicAuth({
   users: {'yt': 'gimmethetext'},
   challenge: true,
   realm: '1mp0ss1b13',
 }));
+*/
 
 // view engine setup
 app.set('views', join(__dirname, 'views'));
