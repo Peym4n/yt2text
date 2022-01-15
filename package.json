@@ -11,15 +11,15 @@
     "watch": "nodemon --watch routes --watch views --watch public -e js,ejs,css ./bin/www"
   },
   "dependencies": {
-    "cookie-parser": "^1.4.5",
+    "cookie-parser": "^1.4.6",
     "debug": "~2.6.9",
     "ejs": "~2.5.7",
-    "express": "^4.16.4",
-    "express-basic-auth": "^1.2.0",
-    "express-session": "^1.17.1",
+    "express": "^4.17.2",
+    "express-basic-auth": "^1.2.1",
+    "express-session": "^1.17.2",
     "http-errors": "~1.6.2",
     "morgan": "^1.10.0",
-    "youtube-captions-scraper": "^1.0.3"
+    "youtube-captions-scraper": "^2.0.0"
   },
   "devDependencies": {
     "nodemon": "^1.19.4"
