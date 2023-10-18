@@ -1,8 +1,8 @@
 import express from 'express';
 const router = express.Router();
 import url from 'url';
-import ycs from "youtube-captions-scraper";
-const getSubtitles = ycs.getSubtitles;
+import yce from "youtube-caption-extractor";
+const getSubtitles = yce.getSubtitles;
 
 const addQuery = (req, res, next) => {
   req.query.url = req.body.vidurl;
