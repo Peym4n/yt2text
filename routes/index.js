@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import url from 'url';
-import yce from "youtube-caption-extractor";
+import yce from "@treeee/youtube-caption-extractor";
 const getSubtitles = yce.getSubtitles;
 
 const addQuery = (req, res, next) => {
@@ -48,7 +48,7 @@ router.post('/2text', function (req, res, next) {
       }
       console.log("Found " + captions.length + " lines.");
       if(joinLines) {
-        req.session.text = captions.map(c => c.text).join(" ");
+        req.session.text = captions.map(c => c.text.replace(/\r?\n|\r/g, ' ').trim()).join(" ");
       } else {
         captions.forEach(c => {
           req.session.text += (useTime ? toHHMMSSsss(c.start) + ' -- ' + toHHMMSSsss(c.start*1 + c.dur*1) + ': ' : '') + c.text + '\r\n';
