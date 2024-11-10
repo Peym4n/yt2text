@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": "12"
+    "node": "18"
   },
   "scripts": {
     "start": "node ./bin/www",
@@ -22,7 +22,10 @@
     "youtube-caption-extractor": "^1.4.3"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "@flydotio/dockerfile": "^0.4.10",
+    "@types/node": "^20.8.7",
+    "nodemon": "^3.0.1",
+    "undici-types": "^5.26.3"
   },
   "resolutions": {
     "axios": "^0.18.1"
