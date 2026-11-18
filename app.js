@@ -1,19 +1,18 @@
 import createError from 'http-errors';
 import express from 'express';
-import { join } from 'path';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import session from 'express-session';
+import RedisStore from 'connect-redis';
+import { createClient } from 'redis';
 import basicAuth from 'express-basic-auth';
-
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
+import 'dotenv/config';
 import indexRouter from './routes/index.js';
 import usersRouter from './routes/users.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 app.use(basicAuth({
@@ -31,10 +30,30 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(join(__dirname, './public')));
+
+const redisUrl = process.env.REDIS_URL;
+if (app.get('env') === 'production' && !redisUrl) {
+  throw new Error('REDIS_URL is required for production sessions');
+}
+
+let store;
+if (redisUrl) {
+  const redisClient = createClient({
+    url: redisUrl,
+    disableOfflineQueue: true,
+    socket: { reconnectStrategy: retries => Math.min(100 * 2 ** retries, 5000) }
+  });
+  redisClient.on('error', error => console.error('Redis session store:', error.message));
+  await redisClient.connect();
+  store = new RedisStore({ client: redisClient });
+}
+
 app.use(session({
+  store,
   secret: 'cute cat video!',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
 app.use('/', indexRouter);
