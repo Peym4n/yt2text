@@ -6,6 +6,6 @@ function copy() {
 
 function pasteText() {
     navigator.clipboard.readText().then(clipText => {
-        $("#url").val(clipText);
+        document.getElementById("url").value = clipText;
     });
 }
