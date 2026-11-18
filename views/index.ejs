@@ -31,6 +31,9 @@
 
     <br />
 
+    <% if (captionMessage) { %>
+    <div class="ui message" role="status"><%= captionMessage %></div>
+    <% } %>
     <textarea readonly id="text"><%= text %></textarea>
     <button id="copy" type="button" onclick="copy()" class="ui button">Copy</button>
 
