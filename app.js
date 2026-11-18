@@ -5,10 +5,9 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import session from 'express-session';
-import RedisStore from 'connect-redis';
+import { RedisStore } from 'connect-redis';
 import { createClient } from 'redis';
 import basicAuth from 'express-basic-auth';
-import 'dotenv/config';
 import indexRouter from './routes/index.js';
 import usersRouter from './routes/users.js';
 

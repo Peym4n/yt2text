@@ -1,8 +1,7 @@
 import express from 'express';
+import { getSubtitles } from 'youtube-caption-extractor';
+
 const router = express.Router();
-import url from 'url';
-import yce from "@treeee/youtube-caption-extractor";
-const { getSubtitles, getSubtitlesDownloadUrl } = yce;
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -22,11 +21,14 @@ router.get('/', function (req, res, next) {
 
 
 router.post('/2text', async function (req, res, next) {
-  const { vidurl, time, join } = req.body;
+  const { vidurl, time, join } = req.body ?? {};
   let videoID;
   try {
     if (typeof vidurl === 'string') {
-      videoID = url.parse(vidurl, true).query.v;
+      const ids = new URL(vidurl, 'https://www.youtube.com').searchParams.getAll('v');
+      if (ids.length === 1) {
+        [videoID] = ids;
+      }
     }
   } catch {
     return res.redirect('/');
@@ -40,7 +42,7 @@ router.post('/2text', async function (req, res, next) {
   let text = '';
   let captionMessage = null;
   try {
-    const captions = await getEnglishCaptions(videoID);
+    const captions = await getVideoCaptions(videoID);
     const lines = captions.map(caption => {
       const captionText = caption.text.replace(/\r\n|\r|\n/g, ' ').trim();
       if (joinLines || !useTime) {
@@ -51,8 +53,8 @@ router.post('/2text', async function (req, res, next) {
       return `${toHHMMSSsss(start)} -- ${toHHMMSSsss(end)}: ${captionText}`;
     });
     if (lines.length === 0) {
-      console.warn(`No English caption track found for YouTube video ${videoID}`);
-      captionMessage = 'No English captions were found for this video.';
+      console.warn(`No caption track found for YouTube video ${videoID}`);
+      captionMessage = 'No captions were found for this video.';
     } else {
       text = joinLines ? lines.join(' ') : lines.map(line => line + '\r\n').join('');
     }
@@ -70,24 +72,23 @@ router.post('/2text', async function (req, res, next) {
   });
 });
 
-async function getEnglishCaptions(videoID) {
-  const response = await fetch(`https://m.youtube.com/watch?v=${videoID}`);
-  if (!response.ok) {
-    throw new Error(`YouTube video page returned HTTP ${response.status}`);
-  }
-  const pageHtml = await response.text();
-  if (!pageHtml.trim()) {
-    throw new Error('YouTube returned an empty video page');
-  }
+async function getVideoCaptions(videoID) {
+  let requestedTrack = false;
+  const captions = await getSubtitles({
+    videoID,
+    lang: 'en',
+    fetch(input, options) {
+      const requestUrl = new URL(input instanceof Request ? input.url : input);
+      if (requestUrl.pathname === '/api/timedtext') {
+        requestedTrack = true;
+      }
+      return globalThis.fetch(input, options);
+    }
+  });
 
-  const captionDownloadUrl = await getSubtitlesDownloadUrl({ videoID, lang: 'en', pageHtml });
-  if (!captionDownloadUrl) {
-    return [];
-  }
-
-  const captions = await getSubtitles({ captionDownloadUrl });
-  if (!captions.some(caption => caption.text.trim())) {
-    throw new Error('YouTube listed an English caption track but returned no usable caption text');
+  // The extractor can return [] for both a missing track and an empty track response.
+  if (requestedTrack && captions.length === 0) {
+    throw new Error('YouTube listed a caption track but returned no usable caption text');
   }
   return captions;
 }
