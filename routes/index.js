@@ -4,75 +4,78 @@ import url from 'url';
 import yce from "@treeee/youtube-caption-extractor";
 const getSubtitles = yce.getSubtitles;
 
-const addQuery = (req, res, next) => {
-  req.query.url = req.body.vidurl;
-  next();
-};
-
 /* GET home page. */
 router.get('/', function (req, res, next) {
-  if(req.query.url && req.query.url !== req.session.vidurl) {
-    req.session.text = "";
-  }
+  const { text, vidurl, time, join } = req.session;
+  const requestedUrl = req.query.url;
   res.render('index', {
     title: 'YT to Text',
-    text: req.session.text,
-    vidurl: req.query.url || req.session.vidurl,
-    time: req.session.time,
-    join: req.session.join
+    text: requestedUrl && requestedUrl !== vidurl ? '' : text,
+    vidurl: requestedUrl || vidurl,
+    time,
+    join
   });
 });
 
 
 
-router.post('/2text', function (req, res, next) {
-  console.log(req.body);
-  req.session.vidurl = req.body.vidurl;
-  const urlParts = url.parse(req.body.vidurl, true);
-  if (urlParts.query && urlParts.query.v && /^[A-Za-z0-9_-]{11,}$/.test(urlParts.query.v)) {
-    let useTime = !!req.body.time;
-    let joinLines = !!req.body.join;
-    req.session.time = useTime;
-    req.session.join = joinLines;
-    req.session.text = "";
-    getSubtitles({
-      videoID: urlParts.query.v, // youtube video id
-      lang: 'en' // default: `en`
-    }).catch((reason) => {
-      console.error(reason);
-      req.session.text = reason + "";
-      res.redirect('/?url=' + encodeURIComponent(req.session.vidurl));
-    }).then(captions => {
-      if(!captions) {
-        return;
-      }
-      console.log("Found " + captions.length + " lines.");
-      if(joinLines) {
-        req.session.text = captions.map(c => c.text.replace(/\r?\n|\r/g, ' ').trim()).join(" ");
-      } else {
-        captions.forEach(c => {
-          req.session.text += (useTime ? toHHMMSSsss(c.start) + ' -- ' + toHHMMSSsss(c.start*1 + c.dur*1) + ': ' : '') + c.text + '\r\n';
-        });
-      }
-
-      res.redirect('/?url=' + encodeURIComponent(req.session.vidurl));
-    }).catch(reason => console.error(reason));
-  } else {
-    res.redirect('/');
+router.post('/2text', async function (req, res, next) {
+  const { vidurl, time, join } = req.body;
+  let videoID;
+  try {
+    if (typeof vidurl === 'string') {
+      videoID = url.parse(vidurl, true).query.v;
+    }
+  } catch {
+    return res.redirect('/');
   }
+  if (typeof videoID !== 'string' || !/^[A-Za-z0-9_-]{11,}$/.test(videoID)) {
+    return res.redirect('/');
+  }
+
+  const useTime = Boolean(time);
+  const joinLines = Boolean(join);
+  let text;
+  try {
+    const captions = await getSubtitles({ videoID, lang: 'en' });
+    const lines = captions.map(caption => {
+      const captionText = caption.text.replace(/\r\n|\r|\n/g, ' ').trim();
+      if (joinLines || !useTime) {
+        return captionText;
+      }
+      const start = Number(caption.start);
+      const end = start + Number(caption.dur);
+      return `${toHHMMSSsss(start)} -- ${toHHMMSSsss(end)}: ${captionText}`;
+    });
+    text = joinLines ? lines.join(' ') : lines.map(line => line + '\r\n').join('');
+  } catch (error) {
+    console.error(error);
+    text = String(error);
+  }
+
+  Object.assign(req.session, { vidurl, time: useTime, join: joinLines, text });
+  req.session.touch().save(error => {
+    if (error) {
+      return next(error);
+    }
+    res.redirect('/?url=' + encodeURIComponent(vidurl));
+  });
 });
 
-function toHHMMSSsss(val) {
-  const sec_num = val*1; // don't forget the second param
-  let hours   = Math.floor(sec_num / 3600);
-  let minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-  let seconds = (sec_num - (hours * 3600) - (minutes * 60)).toFixed(0);
-  let micros = (sec_num % 1).toFixed(3).substring(2).padStart(3, '0');
+function toHHMMSSsss(seconds) {
+  const totalMilliseconds = Math.round(seconds * 1000);
+  const totalSeconds = Math.floor(totalMilliseconds / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor(totalSeconds / 60) % 60;
 
-  if (hours   < 10) {hours   = "0"+hours;}
-  if (minutes < 10) {minutes = "0"+minutes;}
-  if (seconds < 10) {seconds = "0"+seconds;}
-  return (hours !== "00" ? hours+':' : '')+(minutes !== "00" ? minutes+':' : '')+seconds+'.'+micros;
+  const parts = [];
+  if (hours) parts.push(hours);
+  if (hours || minutes) parts.push(minutes);
+  parts.push(totalSeconds % 60);
+
+  const time = parts.map(part => String(part).padStart(2, '0')).join(':');
+  const milliseconds = String(totalMilliseconds % 1000).padStart(3, '0');
+  return `${time}.${milliseconds}`;
 }
 
 export default router;
